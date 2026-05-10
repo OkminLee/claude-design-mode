@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>deck preview</title>
+  <!--
+    Slide deck template. Slides are direct <section> children of <deck-stage>.
+    Add more slides by appending <section> elements. Speaker notes go in the
+    <script id="speaker-notes"> JSON array (one entry per slide, in order).
+  -->
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; background: black; }
+  </style>
+  <script src="${KIND}"></script>
+  <script type="application/json" id="speaker-notes">[]</script>
+</head>
+<body>
+  <deck-stage>
+    <section data-screen-label="01 Title" style="background: #18181b; color: white; display: flex; align-items: center; justify-content: center; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;">
+      <h1 style="font-size: 96px; margin: 0;">Slide 01</h1>
+    </section>
+    <section data-screen-label="02 Body" style="background: #fafafa; color: #111; display: flex; align-items: center; justify-content: center; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;">
+      <h2 style="font-size: 64px; margin: 0;">Slide 02</h2>
+    </section>
+  </deck-stage>
+</body>
+</html>

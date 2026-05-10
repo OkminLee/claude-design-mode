@@ -1,0 +1,21 @@
+{
+  "name": "claude-design-mode",
+  "description": "HTML/JSX design artifact creation with versioning, asset tracking, live preview, AI-slop verifier, starter components, in-page Tweaks panel, and 5 sub-skills (deck, wireframe, make-tweakable, save-as-pdf, handoff).",
+  "version": "1.0.0",
+  "author": {
+    "name": "okmin",
+    "email": "leeokmin@gmail.com"
+  },
+  "homepage": "https://github.com/OkminLee/claude-design-mode",
+  "repository": "https://github.com/OkminLee/claude-design-mode",
+  "license": "MIT",
+  "keywords": [
+    "design",
+    "html",
+    "react",
+    "tweaks",
+    "playwright",
+    "claude-code",
+    "design-mode"
+  ]
+}

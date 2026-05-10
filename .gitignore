@@ -1,0 +1,6 @@
+node_modules/
+*.tmp
+*.preview.png
+*.pdf
+.design-manifest.json
+.DS_Store
