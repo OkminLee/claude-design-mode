@@ -164,10 +164,47 @@ test('parseArgs: --name with slash throws invalid_name', () => {
   );
 });
 
+test('parseArgs: --dest= empty rejects', () => {
+  // The fail() helper calls process.exit. Stub it.
+  const origExit = process.exit;
+  const origStderr = process.stderr.write.bind(process.stderr);
+  let called = null;
+  process.exit = (c) => { called = c; throw new Error('__exit__'); };
+  process.stderr.write = () => true;
+  try {
+    assert.throws(
+      () => parseArgs(['node', 'gh-import.js', 'https://github.com/foo/bar/blob/main/x', '--dest=']),
+      /__exit__/
+    );
+    assert.strictEqual(called, 1);
+  } finally {
+    process.exit = origExit;
+    process.stderr.write = origStderr;
+  }
+});
+
+test('parseArgs: --name= empty rejects', () => {
+  const origExit = process.exit;
+  const origStderr = process.stderr.write.bind(process.stderr);
+  let called = null;
+  process.exit = (c) => { called = c; throw new Error('__exit__'); };
+  process.stderr.write = () => true;
+  try {
+    assert.throws(
+      () => parseArgs(['node', 'gh-import.js', 'https://github.com/foo/bar/blob/main/x', '--name=']),
+      /__exit__/
+    );
+    assert.strictEqual(called, 1);
+  } finally {
+    process.exit = origExit;
+    process.stderr.write = origStderr;
+  }
+});
+
 const { fetchAndStream } = require('../gh-import');
 
 function makeMockFetch(responses) {
-  // responses is a Map<"METHOD url", () => Response | Promise<Response>>
+  // responses는 Map<"METHOD url", () => Response | Promise<Response>>
   return async function mockFetch(input, init) {
     const url = typeof input === 'string' ? input : input.url;
     const method = (init && init.method) || 'GET';
@@ -262,7 +299,7 @@ test('fetchAndStream: GET body bigger than cap throws too_large', async () => {
   const url = 'https://raw.githubusercontent.com/foo/bar/main/file.css';
   const big = 'x'.repeat(2048);
   const responses = new Map([
-    ['HEAD ' + url, () => makeResponse({ headers: { 'content-type': 'text/css' } })], // no Content-Length
+    ['HEAD ' + url, () => makeResponse({ headers: { 'content-type': 'text/css' } })], // Content-Length 없음
     ['GET ' + url, () => makeResponse({ headers: { 'content-type': 'text/css' }, body: big })],
   ]);
   const orig = globalThis.fetch;
@@ -339,7 +376,7 @@ test('main(): happy path writes file and emits JSON', async () => {
   process.exit = (c) => { exitCode = c; throw new Error('__exit__'); };
   process.argv = ['node', 'gh-import.js', url];
 
-  // Reset module cache to avoid stale references in case of prior test failures.
+  // 이전 테스트 실패 시 stale reference 방지를 위해 모듈 캐시 리셋
   delete require.cache[require.resolve('../gh-import')];
   const mod = require('../gh-import');
 

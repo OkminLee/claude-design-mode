@@ -30,7 +30,7 @@ function normalizeUrl(input) {
   parsed.hash = '';
 
   if (parsed.host === 'raw.githubusercontent.com') {
-    // Pass through. Validate path shape: /<o>/<r>/<branch>/<path...>
+    // raw.githubusercontent.com 패스스루. 경로 형태 검증: /<o>/<r>/<branch>/<file path>
     const segs = parsed.pathname.split('/').filter(Boolean);
     if (segs.length < 4) {
       throw new Error('unsupported_url: raw URL missing path');
@@ -40,7 +40,7 @@ function normalizeUrl(input) {
 
   if (parsed.host === 'github.com') {
     const segs = parsed.pathname.split('/').filter(Boolean);
-    // /<o>/<r>/blob/<branch>/<path...> or /<o>/<r>/raw/<branch>/<path...>
+    // /<o>/<r>/blob/<branch>/<file path> 또는 /<o>/<r>/raw/<branch>/<file path>
     if (segs.length < 5 || (segs[2] !== 'blob' && segs[2] !== 'raw')) {
       throw new Error('unsupported_url: expected /<owner>/<repo>/blob/<branch>/<path>');
     }
@@ -102,17 +102,21 @@ function parseArgs(argv) {
       if (!dest) fail('--dest requires a value');
     } else if (a.startsWith('--dest=')) {
       dest = a.slice('--dest='.length);
+      if (!dest) fail('--dest= requires a non-empty value');
     } else if (a === '--name') {
       name = args[++i] || '';
       if (!name) fail('--name requires a value');
     } else if (a.startsWith('--name=')) {
       name = a.slice('--name='.length);
+      if (!name) fail('--name= requires a non-empty value');
     } else if (a === '--max-bytes') {
       const v = args[++i] || '';
       maxBytes = parseInt(v, 10);
       if (!Number.isFinite(maxBytes) || maxBytes <= 0) fail('--max-bytes must be a positive integer');
     } else if (a.startsWith('--max-bytes=')) {
-      maxBytes = parseInt(a.slice('--max-bytes='.length), 10);
+      const v = a.slice('--max-bytes='.length);
+      if (!v) fail('--max-bytes= requires a value');
+      maxBytes = parseInt(v, 10);
       if (!Number.isFinite(maxBytes) || maxBytes <= 0) fail('--max-bytes must be a positive integer');
     } else if (a === '--allow-binary') {
       allowBinary = true;
@@ -170,7 +174,7 @@ async function fetchAndStream(url, maxBytes, allowBinary) {
     throw err;
   }
   if (resp.status === 404) { const e = new Error('not_found'); e.code = 'not_found'; throw e; }
-  if (resp.status === 403) { const e = new Error('forbidden'); e.code = 'forbidden'; throw e; }
+  if (resp.status === 403) { const e = new Error('forbidden: private repo or rate limited'); e.code = 'forbidden'; throw e; }
   if (resp.status >= 400) { const e = new Error('http_error: ' + resp.status); e.code = 'http_error'; throw e; }
 
   const ab = await resp.arrayBuffer();
@@ -198,7 +202,13 @@ function writeAtomic(targetPath, buffer) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv);
+  let args;
+  try {
+    args = parseArgs(process.argv);
+  } catch (e) {
+    failJson('invalid_name', String(e.message || e), 1);
+    return;
+  }
   let rawUrl;
   try {
     rawUrl = normalizeUrl(args.url);
