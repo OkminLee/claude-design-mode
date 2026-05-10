@@ -23,7 +23,7 @@ Follow these six steps for every `/design-mode` invocation. Use a TodoWrite list
 
 1. **Understand** — read the user's request. If the request is empty, one word, or otherwise too thin to act on (e.g. just `/design-mode`, or `/design-mode hero`), stop and ask what they want to design before doing anything else — do not invent a brief. Otherwise, ask focused clarifying questions one at a time when intent, fidelity, variation count, or design system is unclear. Do not guess on ambiguous fundamentals (target medium, brand, audience).
 
-2. **Explore** — read `.design-manifest.json` (if present) to understand prior work in this directory. List the cwd to find existing UI kits, design system files, brand assets, and source code that should constrain the design. If the cwd looks suspicious for design work (`~`, `/`, an empty system directory, or a path that doesn't match the user's stated project), surface it now and confirm before continuing to Plan. If context is thin, ask the user to attach a UI kit, screenshots, or codebase reference before producing high-fidelity output.
+2. **Explore** — read `.design-manifest.json` (if present) to understand prior work in this directory. List the cwd to find existing UI kits, design system files, brand assets, and source code that should constrain the design. If the cwd looks suspicious for design work (`~`, `/`, an empty system directory, or a path that doesn't match the user's stated project), surface it now and confirm before continuing to Plan. If context is thin, ask the user to attach a UI kit, screenshots, or codebase reference before producing high-fidelity output. If the user references a GitHub URL (UI kit, design tokens, brand README, etc.), pull it into the design context before proposing anything: `node <SKILL_BASE>/scripts/gh-import.js <url>` writes the file to `references/`. Read the imported file with the Read tool before deciding on the design system.
 
 3. **Plan** — state the design system you'll use (color, type, layout, rhythm) and the variation strategy. Produce 3+ variations only when the user explicitly asks for options or variations. If the request is ambiguous between "one design" and "options," ask — do not default to three. When variations are warranted, cover distinct dimensions (layout, color, typography, interaction, copy voice), not three near-identical mocks. Identify which sub-skill applies (Make a deck / Wireframe / Make tweakable / regular high-fi mock) and follow its specific workflow — see the Sub-skills section below. If the design needs a device frame, slide shell, window chrome, or variation grid, plan to copy the matching starter (`copy-starter.js <kind>`) rather than redrawing bezels by hand — see the Starter components section below.
 
@@ -84,6 +84,19 @@ A single manifest at the cwd root tracks every artifact this skill produces, gro
 - **Versioning by copy, not in-place edits:** when significantly revising an existing artifact, copy it to a new file rather than overwriting. The naming convention is `<Name> v2.html`, `<Name> v3.html`, and so on. Each version becomes its own entry under the same asset in the manifest.
 - **Filename collision handling:** if the target name already exists when writing, auto-bump to the next available `vN`. Never silently overwrite a prior version.
 - **What counts as significant:** layout overhaul, palette change, copy rewrite, new variant. Default to copy-and-bump in every case. Only edit in place when the user explicitly says "edit this file" or "don't make a new version" — and even then, bump the manifest entry's `subtitle` so the change is visible.
+
+## Helper scripts
+
+The skill ships with these CLI helpers under `<SKILL_BASE>/scripts/`. Run them with `node <path>` from the user's cwd unless noted otherwise.
+
+| Script | Purpose | Trigger |
+|---|---|---|
+| `preview.js` | Render an artifact headlessly + screenshot + collect errors. | Step 5 (Verify), every artifact. |
+| `to-pdf.js` | Print a non-deck artifact to PDF. | "Save as PDF" sub-skill. |
+| `add-tweaks.js` | Retrofit Tweaks panel onto an existing HTML. | "Make tweakable" sub-skill. |
+| `gh-import.js` | Pull a single file from a public GitHub repo into `references/`. | Step 2 (Explore), when the user references a GitHub URL. |
+| `copy-starter.js` | Copy a starter component (device frame, deck shell, etc.) into cwd. | Step 4 (Build), when a starter is needed. |
+| `tweak-host.js` | Daemon that persists tweak-panel changes back to the source file. | User runs once per session in a separate terminal. |
 
 ## Starter components
 
@@ -390,6 +403,6 @@ Avoid tropes that mark a design as AI-generated:
 This skill is sub-project #1 of seven. The following capabilities are intentionally **not** part of this skill yet:
 
 - **Sub-skills (partial)** — 5 of 11 candidate sub-skills landed (Make a deck, Wireframe, Make tweakable, Save as PDF, Handoff to Claude Code — see the Sub-skills section above). Still deferred: Frontend design (use existing `frontend-design` / `impeccable:*` skills), Interactive prototype (default hi-fi flow already covers this), Create design system (candidate sub-project #9); Animated video (blocked by `animations.jsx` starter, deferred from #4); Export as PPTX, Send to Canva (#7 territory). For the deferred ones, do the work inline using the regular workflow — do not pretend they're available as named sub-skills.
-- **External integrations** — GitHub import, web_fetch/search, image metadata, JS sandbox (sub-project #7): until then, ask the user to paste references directly or use the Bash tool with `curl` for raw file fetches when needed.
+- **External integrations (partial)** — GitHub import is shipped (`scripts/gh-import.js`, single public file). Still deferred: `web_fetch` / `web_search` for live page references, image-metadata helper (dimensions, dominant color, EXIF), JS sandbox for in-skill code execution. For these, ask the user to paste references directly or use the Bash tool with `curl` when needed.
 
 When in doubt, do the simple manual thing and tell the user it's a manual step today.
