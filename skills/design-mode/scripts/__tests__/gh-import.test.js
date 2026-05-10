@@ -159,3 +159,138 @@ test('parseArgs: --name with slash throws invalid_name', () => {
     /invalid_name/
   );
 });
+
+const { fetchAndStream } = require('../gh-import');
+
+function makeMockFetch(responses) {
+  // responses is a Map<"METHOD url", () => Response | Promise<Response>>
+  return async function mockFetch(input, init) {
+    const url = typeof input === 'string' ? input : input.url;
+    const method = (init && init.method) || 'GET';
+    const key = method + ' ' + url;
+    const handler = responses.get(key);
+    if (!handler) throw new Error('mockFetch: no handler for ' + key);
+    return handler();
+  };
+}
+
+function makeResponse({ status = 200, headers = {}, body = '' } = {}) {
+  const h = new Map(Object.entries(headers).map(([k, v]) => [k.toLowerCase(), String(v)]));
+  return {
+    status,
+    ok: status >= 200 && status < 300,
+    headers: { get: (k) => h.get(k.toLowerCase()) || null },
+    arrayBuffer: async () => Buffer.from(body),
+  };
+}
+
+test('fetchAndStream: success path returns buffer + content-type', async () => {
+  const url = 'https://raw.githubusercontent.com/foo/bar/main/file.css';
+  const body = 'body { color: red; }';
+  const responses = new Map([
+    ['HEAD ' + url, () => makeResponse({ headers: { 'content-length': String(body.length), 'content-type': 'text/css' } })],
+    ['GET ' + url, () => makeResponse({ headers: { 'content-type': 'text/css' }, body })],
+  ]);
+  const orig = globalThis.fetch;
+  globalThis.fetch = makeMockFetch(responses);
+  try {
+    const r = await fetchAndStream(url, 1024 * 1024, false);
+    assert.strictEqual(r.contentType.startsWith('text/css'), true);
+    assert.strictEqual(r.buffer.toString('utf8'), body);
+    assert.strictEqual(r.fromUrl, url);
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
+test('fetchAndStream: HEAD content-length over cap throws too_large', async () => {
+  const url = 'https://raw.githubusercontent.com/foo/bar/main/big.bin';
+  const responses = new Map([
+    ['HEAD ' + url, () => makeResponse({ headers: { 'content-length': '99999999', 'content-type': 'text/plain' } })],
+  ]);
+  const orig = globalThis.fetch;
+  globalThis.fetch = makeMockFetch(responses);
+  try {
+    await assert.rejects(
+      () => fetchAndStream(url, 1024, false),
+      (err) => err.code === 'too_large'
+    );
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
+test('fetchAndStream: binary content-type throws binary_blocked', async () => {
+  const url = 'https://raw.githubusercontent.com/foo/bar/main/logo.png';
+  const responses = new Map([
+    ['HEAD ' + url, () => makeResponse({ headers: { 'content-type': 'image/png' } })],
+  ]);
+  const orig = globalThis.fetch;
+  globalThis.fetch = makeMockFetch(responses);
+  try {
+    await assert.rejects(
+      () => fetchAndStream(url, 1024 * 1024, false),
+      (err) => err.code === 'binary_blocked'
+    );
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
+test('fetchAndStream: 404 throws not_found', async () => {
+  const url = 'https://raw.githubusercontent.com/foo/bar/main/missing';
+  const responses = new Map([
+    ['HEAD ' + url, () => makeResponse({ status: 404 })],
+  ]);
+  const orig = globalThis.fetch;
+  globalThis.fetch = makeMockFetch(responses);
+  try {
+    await assert.rejects(
+      () => fetchAndStream(url, 1024 * 1024, false),
+      (err) => err.code === 'not_found'
+    );
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
+test('fetchAndStream: GET body bigger than cap throws too_large', async () => {
+  const url = 'https://raw.githubusercontent.com/foo/bar/main/file.css';
+  const big = 'x'.repeat(2048);
+  const responses = new Map([
+    ['HEAD ' + url, () => makeResponse({ headers: { 'content-type': 'text/css' } })], // no Content-Length
+    ['GET ' + url, () => makeResponse({ headers: { 'content-type': 'text/css' }, body: big })],
+  ]);
+  const orig = globalThis.fetch;
+  globalThis.fetch = makeMockFetch(responses);
+  try {
+    await assert.rejects(
+      () => fetchAndStream(url, 1024, false),
+      (err) => err.code === 'too_large'
+    );
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
+test('fetchAndStream: --allow-binary lets image/png through', async () => {
+  const url = 'https://raw.githubusercontent.com/foo/bar/main/logo.png';
+  const body = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+  const responses = new Map([
+    ['HEAD ' + url, () => makeResponse({ headers: { 'content-type': 'image/png', 'content-length': '4' } })],
+    ['GET ' + url, () => ({
+        status: 200,
+        ok: true,
+        headers: { get: (k) => k.toLowerCase() === 'content-type' ? 'image/png' : null },
+        arrayBuffer: async () => body,
+    })],
+  ]);
+  const orig = globalThis.fetch;
+  globalThis.fetch = makeMockFetch(responses);
+  try {
+    const r = await fetchAndStream(url, 1024 * 1024, true);
+    assert.strictEqual(r.buffer.length, 4);
+  } finally {
+    globalThis.fetch = orig;
+  }
+});

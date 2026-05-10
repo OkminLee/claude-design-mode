@@ -132,6 +132,59 @@ function parseArgs(argv) {
   return { url, dest, name, maxBytes, allowBinary };
 }
 
+async function fetchAndStream(url, maxBytes, allowBinary) {
+  // 1. HEAD probe to learn size + type cheaply.
+  let headResp;
+  try {
+    headResp = await fetch(url, { method: 'HEAD', redirect: 'follow' });
+  } catch (e) {
+    const err = new Error('network: HEAD failed: ' + (e && e.message || e));
+    err.code = 'network';
+    throw err;
+  }
+  if (headResp.status === 404) { const e = new Error('not_found'); e.code = 'not_found'; throw e; }
+  if (headResp.status === 403) { const e = new Error('forbidden: private repo or rate limited'); e.code = 'forbidden'; throw e; }
+  if (headResp.status >= 400) { const e = new Error('http_error: ' + headResp.status); e.code = 'http_error'; throw e; }
+
+  const contentType = headResp.headers.get('content-type') || '';
+  if (!validateContentType(contentType, allowBinary)) {
+    const e = new Error('binary_blocked: content-type ' + contentType + ' is not text-like (use --allow-binary to override)');
+    e.code = 'binary_blocked';
+    throw e;
+  }
+  const lenHeader = headResp.headers.get('content-length');
+  if (lenHeader != null) {
+    const len = parseInt(lenHeader, 10);
+    if (Number.isFinite(len) && len > maxBytes) {
+      const e = new Error('too_large: ' + len + ' bytes exceeds --max-bytes ' + maxBytes);
+      e.code = 'too_large';
+      throw e;
+    }
+  }
+
+  // 2. GET full body.
+  let resp;
+  try {
+    resp = await fetch(url, { method: 'GET', redirect: 'follow' });
+  } catch (e) {
+    const err = new Error('network: GET failed: ' + (e && e.message || e));
+    err.code = 'network';
+    throw err;
+  }
+  if (resp.status === 404) { const e = new Error('not_found'); e.code = 'not_found'; throw e; }
+  if (resp.status === 403) { const e = new Error('forbidden'); e.code = 'forbidden'; throw e; }
+  if (resp.status >= 400) { const e = new Error('http_error: ' + resp.status); e.code = 'http_error'; throw e; }
+
+  const ab = await resp.arrayBuffer();
+  const buffer = Buffer.from(ab);
+  if (buffer.length > maxBytes) {
+    const e = new Error('too_large: ' + buffer.length + ' bytes exceeds --max-bytes ' + maxBytes);
+    e.code = 'too_large';
+    throw e;
+  }
+  return { buffer, contentType: resp.headers.get('content-type') || contentType, fromUrl: url };
+}
+
 async function main() {
   fail('not yet implemented');
 }
@@ -139,5 +192,5 @@ async function main() {
 if (require.main === module) {
   main().catch(err => fail('unhandled: ' + (err && err.stack || err)));
 } else {
-  module.exports = { normalizeUrl, validateContentType, bumpFilename, parseArgs };
+  module.exports = { normalizeUrl, validateContentType, bumpFilename, parseArgs, fetchAndStream };
 }
