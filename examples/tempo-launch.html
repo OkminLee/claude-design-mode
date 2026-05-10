@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tempo — launching soon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0b0e;
+      --fg: #fafafa;
+      --muted: #71717a;
+      --accent: #d97757;
+      --surface: #18181b;
+      --border: #27272a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100vh; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      font-feature-settings: "ss01", "cv11";
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.25s, color 0.25s;
+    }
+    body.light {
+      --bg: #fafafa;
+      --fg: #0b0b0e;
+      --muted: #52525b;
+      --surface: #ffffff;
+      --border: #e4e4e7;
+    }
+    .stage {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 80px 64px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 96px;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .nav {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 32px 64px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .logo-mark {
+      width: 22px;
+      height: 22px;
+      background: var(--accent);
+      border-radius: 6px;
+    }
+    .nav-links { display: flex; gap: 28px; color: var(--muted); }
+    .nav-links a { color: inherit; text-decoration: none; }
+    .nav-links a:hover { color: var(--fg); }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+    .eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+    }
+    h1 {
+      font-size: clamp(48px, 6vw, 84px);
+      line-height: 0.96;
+      letter-spacing: -0.035em;
+      font-weight: 600;
+      margin: 0 0 24px;
+      max-width: 12ch;
+    }
+    h1 em { font-style: normal; color: var(--accent); }
+    .lede {
+      font-size: 19px;
+      line-height: 1.55;
+      color: var(--muted);
+      max-width: 40ch;
+      margin: 0 0 40px;
+    }
+    .ctas { display: flex; gap: 12px; align-items: center; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 15px;
+      text-decoration: none;
+      transition: transform 0.1s ease, opacity 0.15s ease;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--accent); color: #0b0b0e; }
+    .btn-primary:hover { opacity: 0.92; }
+    .btn-ghost { background: transparent; color: var(--fg); border-color: var(--border); }
+    .btn-ghost:hover { border-color: var(--fg); }
+    .arrow { width: 14px; height: 14px; }
+    .meta {
+      margin-top: 64px;
+      display: flex;
+      gap: 40px;
+      color: var(--muted);
+      font-size: 13px;
+      font-family: 'Geist Mono', ui-monospace, monospace;
+    }
+    .meta .num {
+      display: block;
+      color: var(--fg);
+      font-size: 28px;
+      font-family: 'Geist', sans-serif;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .device-stage {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    /* iOS frame styles (vanilla CSS clone of ios_frame.jsx for self-contained example) */
+    .iphone {
+      width: 360px;
+      height: 780px;
+      background: #18181b;
+      border-radius: 58px;
+      padding: 9px;
+      border: 1px solid #2a2a2e;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04);
+      position: relative;
+    }
+    .iphone-screen {
+      width: 100%; height: 100%;
+      background: #0b0b0e;
+      border-radius: 47px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .iphone-island {
+      position: absolute;
+      top: 9px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 121px;
+      height: 36px;
+      background: #000;
+      border-radius: 18px;
+      z-index: 3;
+    }
+    .iphone-home {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 128px;
+      height: 5px;
+      background: #fafafa;
+      opacity: 0.6;
+      border-radius: 5px;
+      z-index: 3;
+    }
+    /* App UI inside iPhone */
+    .app {
+      flex: 1;
+      padding: 64px 24px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      color: #fafafa;
+      font-size: 13px;
+    }
+    .app-title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .app-sub {
+      font-size: 12px;
+      color: #71717a;
+      margin: 0 0 16px;
+      font-family: 'Geist Mono', ui-monospace, monospace;
+    }
+    .timer-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    body.light .timer-card { background: #18181b; border-color: #27272a; color: #fafafa; }
+    .timer-task {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: #d4d4d8;
+      margin-bottom: 10px;
+    }
+    .timer-task .accent-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent);
+    }
+    .timer-display {
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-size: 34px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      color: #fafafa;
+      margin: 8px 0 4px;
+    }
+    .timer-status {
+      font-size: 11px; font-family: 'Geist Mono', monospace;
+      color: var(--accent); letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .timer-bar {
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      margin-top: 14px;
+      overflow: hidden;
+    }
+    .timer-bar-fill {
+      height: 100%;
+      width: 64%;
+      background: var(--accent);
+      border-radius: 4px;
+    }
+    .session-row {
+      display: flex; justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 13px;
+      color: #d4d4d8;
+    }
+    .session-row:last-child { border-bottom: none; }
+    .session-row .duration {
+      font-family: 'Geist Mono', monospace;
+      color: #fafafa;
+    }
+    .footer-line {
+      position: absolute;
+      bottom: 32px;
+      left: 64px;
+      right: 64px;
+      max-width: 1280px - 128px;
+      margin: 0 auto;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="logo"><div class="logo-mark"></div>Tempo</div>
+    <div class="nav-links">
+      <a href="#">Features</a>
+      <a href="#">Pricing</a>
+      <a href="#">Changelog</a>
+      <a href="#">Sign in</a>
+    </div>
+  </nav>
+
+  <main class="stage">
+    <div>
+      <div class="eyebrow"><span class="dot"></span><span>Launching May 22</span></div>
+      <h1 id="headline">Time you'll <em id="accent-word">actually</em> recover.</h1>
+      <p class="lede" id="lede">A keyboard-first time tracker that lives in your menu bar. No timesheets. No Pomodoro guilt. Just clarity on where the day went.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" id="cta">Get early access<svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+        <a class="btn btn-ghost" href="#">Watch demo</a>
+      </div>
+      <div class="meta">
+        <div><span class="num">1,847</span>builders on the waitlist</div>
+        <div><span class="num">12s</span>median to start a session</div>
+      </div>
+    </div>
+
+    <div class="device-stage">
+      <div class="iphone">
+        <div class="iphone-screen">
+          <div class="iphone-island"></div>
+          <div class="app">
+            <p class="app-sub">TUE · MAY 21 · 14:32</p>
+            <h2 class="app-title">This afternoon</h2>
+            <div class="timer-card">
+              <div class="timer-task"><span class="accent-dot"></span>claude-design-mode · v1.0 release</div>
+              <div class="timer-display">01:23:48</div>
+              <div class="timer-status">running</div>
+              <div class="timer-bar"><div class="timer-bar-fill"></div></div>
+            </div>
+            <div style="margin-top: 8px;">
+              <div class="session-row"><span>Plan review</span><span class="duration">42m</span></div>
+              <div class="session-row"><span>Spec writing</span><span class="duration">1h 18m</span></div>
+              <div class="session-row"><span>Plugin packaging</span><span class="duration">2h 04m</span></div>
+              <div class="session-row"><span>Inbox triage</span><span class="duration">11m</span></div>
+            </div>
+          </div>
+          <div class="iphone-home"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="footer-line">
+    <span>© 2026 Tempo Labs</span>
+    <span>built with claude-design-mode</span>
+  </div>
+
+  <!-- Tweaks: live in-page tuning. Edit these and the page updates. With tweak-host.js running, edits also persist to disk. -->
+  <script>
+    const heroDefaults = /*EDITMODE-BEGIN*/{
+      "accent": "#d97757",
+      "headline": "Time you'll actually recover.",
+      "accentWord": "actually",
+      "lede": "A keyboard-first time tracker that lives in your menu bar. No timesheets. No Pomodoro guilt. Just clarity on where the day went.",
+      "ctaLabel": "Get early access",
+      "dark": true
+    }/*EDITMODE-END*/;
+  </script>
+  <script src="tweaks-panel.js"></script>
+  <script>
+    const filePath = location.protocol === 'file:' ? decodeURIComponent(location.pathname) : location.pathname;
+    function apply(all) {
+      document.documentElement.style.setProperty('--accent', all.accent);
+      const head = document.getElementById('headline');
+      const accentWord = document.getElementById('accent-word');
+      head.firstChild.textContent = all.headline.replace(all.accentWord, '').replace('  ', ' ').replace(/\s+/g,' ').trim() + ' ';
+      // simpler: split headline at the accent word
+      const parts = all.headline.split(all.accentWord);
+      if (parts.length === 2) {
+        head.innerHTML = parts[0] + '<em id="accent-word">' + all.accentWord + '</em>' + parts[1];
+      } else {
+        head.textContent = all.headline;
+      }
+      document.getElementById('lede').textContent = all.lede;
+      document.getElementById('cta').firstChild.textContent = all.ctaLabel;
+      document.body.classList.toggle('light', !all.dark);
+    }
+    apply(heroDefaults);
+    TweaksPanel.mount(heroDefaults, {
+      filePath: filePath,
+      onChange: (_k, _v, all) => apply(all),
+    });
+  </script>
+</body>
+</html>

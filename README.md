@@ -10,6 +10,27 @@ A Claude Code plugin for HTML/JSX design artifact creation. Inspired by the Clau
 
 (Or via Claude Code's plugin UI — paste the GitHub URL.)
 
+## Showcase
+
+One prompt → this:
+
+![Tempo launch landing page](examples/tempo-launch.png)
+
+**Prompt:**
+
+> `/design-mode` 시간 추적 앱 "Tempo"의 launch landing page. 다크 테마, Geist 폰트, 좌측 헤드라인+CTA, 우측 iPhone 프레임 안에 앱 UI (현재 추적 중인 타이머 카드 + 오늘 세션 목록). 강조 색상은 한 가지만, gradient/emoji/3-col grid 금지. accent color, headline, lede, CTA 카피, dark toggle을 Tweaks로 라이브 편집 가능하게.
+
+**What the plugin produced:**
+
+- Single self-contained `tempo-launch.html` (~270 lines, vanilla CSS, Google Font import for Geist).
+- Custom iPhone bezel with Dynamic Island + home indicator (lifted from the `ios_frame` starter conventions).
+- App-inside-the-phone shows a **running timer for "claude-design-mode · v1.0 release"** — a meta touch that doubles as a live demo of the plugin building itself.
+- 6 EDITMODE keys: `accent` (color picker), `headline` / `accentWord` / `lede` / `ctaLabel` (text inputs), `dark` (toggle).
+- Tweaks panel renders bottom-right; status dot turns green when `tweak-host.js` is running and the file is being persisted on each tweak.
+- Verified by `preview.js`: `loaded: true`, `errors: 0`, `network_errors: 0`. `design-verifier` returns `✅ pass` (no gradients, no accent-border cards, no overused fonts, no 3-col grid, no AI-headline phrases like "transform / unlock / supercharge", no emoji).
+
+**Source:** [`examples/tempo-launch.html`](examples/tempo-launch.html). Open it in a browser to interact with the live Tweaks panel.
+
 ## Quick start
 
 In any working directory:
