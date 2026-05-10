@@ -133,7 +133,6 @@ function parseArgs(argv) {
 }
 
 async function fetchAndStream(url, maxBytes, allowBinary) {
-  // 1. HEAD probe to learn size + type cheaply.
   let headResp;
   try {
     headResp = await fetch(url, { method: 'HEAD', redirect: 'follow' });
@@ -162,7 +161,6 @@ async function fetchAndStream(url, maxBytes, allowBinary) {
     }
   }
 
-  // 2. GET full body.
   let resp;
   try {
     resp = await fetch(url, { method: 'GET', redirect: 'follow' });
