@@ -26,8 +26,14 @@ If install verification fails, the most likely cause is Claude treating `<SKILL_
 
 ### Future sub-projects (each is its own brainstorm → spec → plan → execute cycle)
 
-#### #7 — External integrations
-GitHub import (read public repo files into design context), `web_fetch` / `web_search` for design references, image-metadata helper, JS sandbox for in-skill code execution. Specifically deferred to keep the plugin's hard system dependencies down to `node`/`npm`/`jq`/`curl` only.
+#### #7 — External integrations (partial — GitHub import shipped 2026-05-10)
+
+GitHub import (single public file → `references/`) is shipped via `scripts/gh-import.js`. Still deferred:
+- `web_fetch` / `web_search` for live page references.
+- Image-metadata helper (dimensions, dominant color, EXIF).
+- JS sandbox for in-skill code execution.
+
+Originally deferred to keep hard system dependencies down to `node`/`npm`/`jq`/`curl` only. GitHub import landed without adding any new dependency (Node 18+ built-in `fetch` against `raw.githubusercontent.com`); the remaining three each face their own dependency or use-case concerns and are best tackled in separate iterations.
 
 #### #9 — Create design system
 Currently treated as too big for a sub-skill section. Would produce a tokens file (`design-tokens.json` or `tokens.css`) + a small component library + a style guide page. Could either live inside `design-mode` SKILL.md as another sub-skill or be its own plugin (`claude-design-system`).
