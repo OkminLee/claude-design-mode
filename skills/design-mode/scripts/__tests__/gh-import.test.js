@@ -2,6 +2,10 @@
 
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('path');
+const os = require('os');
+const fs = require('fs');
+const crypto = require('crypto');
 
 test('test runner works', () => {
   assert.strictEqual(1 + 1, 2);
@@ -293,4 +297,70 @@ test('fetchAndStream: --allow-binary lets image/png through', async () => {
   } finally {
     globalThis.fetch = orig;
   }
+});
+
+const { writeAtomic } = require('../gh-import');
+
+test('writeAtomic: writes file with sha256', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghimport-'));
+  try {
+    const target = path.join(dir, 'tokens.css');
+    const buf = Buffer.from('body { color: red; }', 'utf8');
+    const sha = writeAtomic(target, buf);
+    assert.strictEqual(fs.readFileSync(target, 'utf8'), 'body { color: red; }');
+    assert.strictEqual(sha, crypto.createHash('sha256').update(buf).digest('hex'));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('main(): happy path writes file and emits JSON', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghimport-e2e-'));
+  const url = 'https://github.com/foo/bar/blob/main/tokens.css';
+  const rawUrl = 'https://raw.githubusercontent.com/foo/bar/main/tokens.css';
+  const body = ':root { --primary: #D97757; }';
+
+  const responses = new Map([
+    ['HEAD ' + rawUrl, () => makeResponse({ headers: { 'content-length': String(body.length), 'content-type': 'text/css' } })],
+    ['GET ' + rawUrl, () => makeResponse({ headers: { 'content-type': 'text/css' }, body })],
+  ]);
+
+  const origCwd = process.cwd();
+  const origFetch = globalThis.fetch;
+  const origWrite = process.stdout.write.bind(process.stdout);
+  const origExit = process.exit;
+  const origArgv = process.argv;
+  let captured = '';
+  let exitCode = null;
+
+  process.chdir(dir);
+  globalThis.fetch = makeMockFetch(responses);
+  process.stdout.write = (s) => { captured += s; return true; };
+  process.exit = (c) => { exitCode = c; throw new Error('__exit__'); };
+  process.argv = ['node', 'gh-import.js', url];
+
+  // Reset module cache to avoid stale references in case of prior test failures.
+  delete require.cache[require.resolve('../gh-import')];
+  const mod = require('../gh-import');
+
+  try {
+    await mod.main();
+  } catch (e) {
+    if (e.message !== '__exit__') throw e;
+  } finally {
+    process.argv = origArgv;
+    process.chdir(origCwd);
+    globalThis.fetch = origFetch;
+    process.stdout.write = origWrite;
+    process.exit = origExit;
+  }
+
+  const json = JSON.parse(captured.trim());
+  assert.strictEqual(json.bytes, body.length);
+  assert.strictEqual(json.from, rawUrl);
+  assert.match(json.imported, /references[\\/]tokens\.css$/);
+  assert.strictEqual(json.sha256, crypto.createHash('sha256').update(body).digest('hex'));
+  assert.strictEqual(fs.readFileSync(json.imported, 'utf8'), body);
+
+  fs.rmSync(dir, { recursive: true, force: true });
 });

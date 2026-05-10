@@ -183,12 +183,69 @@ async function fetchAndStream(url, maxBytes, allowBinary) {
   return { buffer, contentType: resp.headers.get('content-type') || contentType, fromUrl: url };
 }
 
+function writeAtomic(targetPath, buffer) {
+  const dir = path.dirname(targetPath);
+  fs.mkdirSync(dir, { recursive: true });
+  const tmp = path.join(dir, '.' + path.basename(targetPath) + '.tmp.' + process.pid);
+  fs.writeFileSync(tmp, buffer);
+  try {
+    fs.renameSync(tmp, targetPath);
+  } catch (e) {
+    try { fs.unlinkSync(tmp); } catch (_) {}
+    throw e;
+  }
+  return crypto.createHash('sha256').update(buffer).digest('hex');
+}
+
 async function main() {
-  fail('not yet implemented');
+  const args = parseArgs(process.argv);
+  let rawUrl;
+  try {
+    rawUrl = normalizeUrl(args.url);
+  } catch (e) {
+    failJson('unsupported_url', String(e.message || e), 1);
+    return;
+  }
+
+  let result;
+  try {
+    result = await fetchAndStream(rawUrl, args.maxBytes, args.allowBinary);
+  } catch (e) {
+    const code = e.code || 'network';
+    failJson(code, String(e.message || e), 2);
+    return;
+  }
+
+  const urlPath = new URL(rawUrl).pathname;
+  const baseName = args.name || path.basename(urlPath) || 'imported';
+  const destDir = path.resolve(process.cwd(), args.dest);
+  let targetPath;
+  try {
+    targetPath = bumpFilename(destDir, baseName);
+  } catch (e) {
+    failJson('io', String(e.message || e), 2);
+    return;
+  }
+
+  let sha256;
+  try {
+    sha256 = writeAtomic(targetPath, result.buffer);
+  } catch (e) {
+    failJson('io', 'write failed: ' + String(e.message || e), 2);
+    return;
+  }
+
+  const out = {
+    imported: targetPath,
+    bytes: result.buffer.length,
+    from: result.fromUrl,
+    sha256,
+  };
+  process.stdout.write(JSON.stringify(out) + '\n');
 }
 
 if (require.main === module) {
   main().catch(err => fail('unhandled: ' + (err && err.stack || err)));
 } else {
-  module.exports = { normalizeUrl, validateContentType, bumpFilename, parseArgs, fetchAndStream };
+  module.exports = { normalizeUrl, validateContentType, bumpFilename, parseArgs, fetchAndStream, writeAtomic, main };
 }
