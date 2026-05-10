@@ -54,6 +54,20 @@ function normalizeUrl(input) {
   throw new Error('unsupported_url: host ' + parsed.host);
 }
 
+const TEXT_LIKE_PATTERNS = [
+  /^text\//i,
+  /^application\/json\b/i,
+  /^application\/(java|type)script\b/i,
+  /^application\/xml\b/i,
+  /^application\/(x-)?yaml\b/i,
+];
+
+function validateContentType(header, allowBinary) {
+  if (allowBinary) return true;
+  if (!header) return false;
+  return TEXT_LIKE_PATTERNS.some(re => re.test(header));
+}
+
 async function main() {
   fail('not yet implemented');
 }
@@ -61,5 +75,5 @@ async function main() {
 if (require.main === module) {
   main().catch(err => fail('unhandled: ' + (err && err.stack || err)));
 } else {
-  module.exports = { normalizeUrl };
+  module.exports = { normalizeUrl, validateContentType };
 }

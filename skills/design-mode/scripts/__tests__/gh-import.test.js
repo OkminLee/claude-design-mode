@@ -55,3 +55,34 @@ test('normalizeUrl: rejects whole-repo URL with no path', () => {
     /unsupported_url/
   );
 });
+
+const { validateContentType } = require('../gh-import');
+
+test('validateContentType: accepts text/css', () => {
+  assert.strictEqual(validateContentType('text/css; charset=utf-8', false), true);
+});
+
+test('validateContentType: accepts application/json', () => {
+  assert.strictEqual(validateContentType('application/json', false), true);
+});
+
+test('validateContentType: accepts application/javascript', () => {
+  assert.strictEqual(validateContentType('application/javascript', false), true);
+});
+
+test('validateContentType: accepts application/yaml', () => {
+  assert.strictEqual(validateContentType('application/yaml', false), true);
+});
+
+test('validateContentType: rejects image/png when allow-binary false', () => {
+  assert.strictEqual(validateContentType('image/png', false), false);
+});
+
+test('validateContentType: accepts image/png when allow-binary true', () => {
+  assert.strictEqual(validateContentType('image/png', true), true);
+});
+
+test('validateContentType: missing header treated as octet-stream → reject', () => {
+  assert.strictEqual(validateContentType('', false), false);
+  assert.strictEqual(validateContentType(null, false), false);
+});
