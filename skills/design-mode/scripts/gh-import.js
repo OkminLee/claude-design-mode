@@ -68,6 +68,22 @@ function validateContentType(header, allowBinary) {
   return TEXT_LIKE_PATTERNS.some(re => re.test(header));
 }
 
+function bumpFilename(destDir, filename, existsFn) {
+  const exists = existsFn || ((p) => fs.existsSync(p));
+  const target = path.join(destDir, filename);
+  if (!exists(target)) return target;
+
+  const dot = filename.lastIndexOf('.');
+  const stem = dot > 0 ? filename.slice(0, dot) : filename;
+  const ext = dot > 0 ? filename.slice(dot) : '';
+
+  for (let i = 2; i < 1000; i++) {
+    const candidate = path.join(destDir, stem + '.' + i + ext);
+    if (!exists(candidate)) return candidate;
+  }
+  throw new Error('bumpFilename: too many collisions for ' + filename);
+}
+
 async function main() {
   fail('not yet implemented');
 }
@@ -75,5 +91,5 @@ async function main() {
 if (require.main === module) {
   main().catch(err => fail('unhandled: ' + (err && err.stack || err)));
 } else {
-  module.exports = { normalizeUrl, validateContentType };
+  module.exports = { normalizeUrl, validateContentType, bumpFilename };
 }

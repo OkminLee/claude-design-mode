@@ -86,3 +86,31 @@ test('validateContentType: missing header treated as octet-stream → reject', (
   assert.strictEqual(validateContentType('', false), false);
   assert.strictEqual(validateContentType(null, false), false);
 });
+
+const { bumpFilename } = require('../gh-import');
+
+test('bumpFilename: returns base name when no collision', () => {
+  const exists = (p) => false;
+  assert.strictEqual(bumpFilename('/tmp/refs', 'tokens.css', exists), '/tmp/refs/tokens.css');
+});
+
+test('bumpFilename: appends .2 on first collision', () => {
+  const seen = new Set(['/tmp/refs/tokens.css']);
+  const exists = (p) => seen.has(p);
+  assert.strictEqual(bumpFilename('/tmp/refs', 'tokens.css', exists), '/tmp/refs/tokens.2.css');
+});
+
+test('bumpFilename: keeps bumping until free slot', () => {
+  const seen = new Set([
+    '/tmp/refs/tokens.css',
+    '/tmp/refs/tokens.2.css',
+    '/tmp/refs/tokens.3.css',
+  ]);
+  const exists = (p) => seen.has(p);
+  assert.strictEqual(bumpFilename('/tmp/refs', 'tokens.css', exists), '/tmp/refs/tokens.4.css');
+});
+
+test('bumpFilename: handles dotless filenames', () => {
+  const exists = (p) => p === '/tmp/refs/README';
+  assert.strictEqual(bumpFilename('/tmp/refs', 'README', exists), '/tmp/refs/README.2');
+});
