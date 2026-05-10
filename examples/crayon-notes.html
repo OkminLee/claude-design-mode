@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Crayon — handwritten notes for the Mac</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100vh; }
+    body {
+      background: #f5f1ea;
+      color: #1a1a1a;
+      font-family: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.005em;
+    }
+    .nav {
+      max-width: 1240px; margin: 0 auto; padding: 32px 48px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; }
+    .brand-mark {
+      width: 28px; height: 28px; background: #d97757; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      transform: rotate(-6deg);
+      font-family: 'Caveat', cursive; color: #fff; font-size: 22px; font-weight: 700;
+      line-height: 1;
+    }
+    .nav-r { display: flex; gap: 24px; align-items: center; font-size: 14px; }
+    .nav-r a { color: #52525b; text-decoration: none; }
+    .nav-r a:hover { color: #1a1a1a; }
+    .pill { padding: 8px 14px; border-radius: 999px; background: #1a1a1a; color: #fff; font-weight: 500; }
+    .hero {
+      max-width: 1240px; margin: 0 auto; padding: 64px 48px 32px;
+      display: grid; grid-template-columns: 1fr 1.05fr; gap: 64px; align-items: center;
+    }
+    .hero h1 {
+      font-size: 76px; line-height: 0.98; letter-spacing: -0.035em;
+      font-weight: 700; margin: 0 0 24px; max-width: 13ch;
+    }
+    .hero h1 .scribble {
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      color: #d97757;
+      letter-spacing: -0.01em;
+      transform: rotate(-2deg) translateY(6px);
+      display: inline-block;
+    }
+    .hero .lede { font-size: 18px; line-height: 1.55; color: #52525b; max-width: 44ch; margin: 0 0 32px; }
+    .ctas { display: flex; gap: 12px; align-items: center; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 22px; border-radius: 12px; font-weight: 500; font-size: 15px; text-decoration: none; cursor: pointer; border: 1px solid transparent; }
+    .btn-primary { background: #1a1a1a; color: #fff; }
+    .btn-primary:hover { background: #2a2a2a; }
+    .btn-ghost { background: transparent; color: #1a1a1a; border-color: #d6d2c8; }
+    .meta-line { display: flex; gap: 24px; margin-top: 32px; font-size: 13px; color: #71717a; }
+    .meta-line .dot { color: #d97757; }
+    /* macOS window */
+    .mac {
+      width: 100%;
+      max-width: 640px;
+      background: #fafafa;
+      border-radius: 14px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.18), 0 0 0 0.5px rgba(0,0,0,0.18);
+      overflow: hidden;
+      transform: rotate(0.5deg);
+      justify-self: end;
+    }
+    .mac-bar {
+      height: 36px;
+      background: linear-gradient(to bottom, #ededed, #dddddd);
+      border-bottom: 0.5px solid #c5c5c5;
+      display: flex; align-items: center; padding: 0 14px;
+      position: relative;
+    }
+    .mac-bar .lights { display: flex; gap: 8px; }
+    .mac-bar .lights span { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.15); }
+    .mac-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 12px; color: #5a5a5a; font-weight: 500; }
+    .mac-body { display: grid; grid-template-columns: 200px 1fr; min-height: 460px; }
+    .mac-side { background: #f0ece4; padding: 16px 12px; border-right: 0.5px solid #d6d2c8; }
+    .mac-side .group { font-size: 11px; color: #8c8a82; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 8px; }
+    .mac-side .item { padding: 7px 10px; border-radius: 6px; font-size: 13px; color: #2a2a2a; display: flex; justify-content: space-between; align-items: center; }
+    .mac-side .item.sel { background: #d97757; color: #fff; font-weight: 500; }
+    .mac-side .item.sel .ct { color: rgba(255,255,255,0.85); }
+    .mac-side .ct { font-size: 11px; color: #a39e93; }
+    .mac-main { padding: 28px 32px; background: #fefdfb; }
+    .mac-meta { font-size: 11px; color: #a39e93; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 12px; }
+    .mac-h { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 16px; }
+    .mac-text { font-size: 15px; line-height: 1.6; color: #2a2a2a; margin: 0; }
+    .mac-text + .mac-text { margin-top: 14px; }
+    .mac-handwritten {
+      font-family: 'Caveat', cursive;
+      font-size: 26px;
+      color: #d97757;
+      transform: rotate(-1deg);
+      margin: 18px 0;
+      line-height: 1.2;
+      max-width: 36ch;
+    }
+    .mac-handwritten::before { content: '— '; color: #d97757; opacity: 0.6; }
+    .mac-tags { display: flex; gap: 6px; margin-top: 24px; }
+    .tag { font-size: 11px; padding: 3px 10px; border-radius: 999px; background: #f0ece4; color: #6b6760; font-family: 'JetBrains Mono', monospace; }
+    /* Strengths band */
+    .band {
+      max-width: 1240px; margin: 96px auto 0; padding: 56px 48px;
+      border-top: 1px solid #d6d2c8;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px;
+    }
+    .band .row .icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: #1a1a1a; display: flex; align-items: center; justify-content: center;
+      font-family: 'Caveat', cursive; color: #d97757; font-weight: 700; font-size: 22px;
+      line-height: 1; transform: rotate(-4deg);
+      margin-bottom: 16px;
+    }
+    .band h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .band p { font-size: 14px; line-height: 1.55; color: #52525b; margin: 0; }
+    .footer {
+      max-width: 1240px; margin: 0 auto; padding: 48px 48px 64px;
+      border-top: 1px solid #d6d2c8; margin-top: 56px;
+      display: flex; justify-content: space-between; font-size: 13px; color: #71717a;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <div class="brand"><div class="brand-mark">c</div>Crayon</div>
+    <div class="nav-r">
+      <a href="#">Tour</a>
+      <a href="#">Pricing</a>
+      <a href="#">Changelog</a>
+      <a href="#" class="pill">Download · Free</a>
+    </div>
+  </div>
+
+  <main class="hero">
+    <div>
+      <h1>Notes that<br>still feel <span class="scribble">handmade.</span></h1>
+      <p class="lede">A native Mac notes app that mixes typed text with handwritten margins, sketches, and crayon-colored highlights. Plain text on the inside. Yours on the outside.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="#">Download for macOS</a>
+        <a class="btn btn-ghost" href="#">See it in motion</a>
+      </div>
+      <div class="meta-line">
+        <span><span class="dot">●</span> Universal · Apple Silicon + Intel</span>
+        <span>macOS 14+</span>
+        <span>3.4 MB</span>
+      </div>
+    </div>
+
+    <div class="mac">
+      <div class="mac-bar">
+        <div class="lights">
+          <span style="background: #ff5f57"></span>
+          <span style="background: #febc2e"></span>
+          <span style="background: #28c840"></span>
+        </div>
+        <div class="mac-title">Field notebook · 2026</div>
+      </div>
+      <div class="mac-body">
+        <aside class="mac-side">
+          <div class="group">Notebooks</div>
+          <div class="item">Daybook<span class="ct">142</span></div>
+          <div class="item sel">Field notebook<span class="ct">38</span></div>
+          <div class="item">Sketches<span class="ct">21</span></div>
+          <div class="item">Reading log<span class="ct">76</span></div>
+          <div class="group" style="margin-top: 16px;">Pinned</div>
+          <div class="item">Bicycle parts<span class="ct"></span></div>
+          <div class="item">Studio rent<span class="ct"></span></div>
+        </aside>
+        <article class="mac-main">
+          <div class="mac-meta">Tue · 14 May · 09:42</div>
+          <h2 class="mac-h">On the third draft</h2>
+          <p class="mac-text">Most of the work is in the cuts. The shape was there in draft one but it took two more passes to find which sentences were holding it back.</p>
+          <p class="mac-handwritten">cut more — keep the verbs, lose the nouns</p>
+          <p class="mac-text">The note app I want should let me write quickly and annotate slowly. Two modes, same file. Not two apps. Not two files.</p>
+          <div class="mac-tags">
+            <span class="tag">writing</span>
+            <span class="tag">drafts</span>
+            <span class="tag">tools</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <section class="band">
+    <div class="row">
+      <div class="icon">a</div>
+      <h3>Local first.</h3>
+      <p>Notes live in plain Markdown on your disk. Sync via iCloud Drive if you want it. No account.</p>
+    </div>
+    <div class="row">
+      <div class="icon">b</div>
+      <h3>Two textures.</h3>
+      <p>Type for thinking. Switch to handwriting for margins. Both stay in the same file, in the same line.</p>
+    </div>
+    <div class="row">
+      <div class="icon">c</div>
+      <h3>One window.</h3>
+      <p>No tabs. No tag manager. One sidebar, one canvas, one keyboard shortcut to find anything.</p>
+    </div>
+  </section>
+
+  <div class="footer">
+    <span>© 2026 Crayon</span>
+    <span>built with claude-design-mode</span>
+  </div>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Foundry — pricing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --fg: #0b0b0e;
+      --muted: #52525b;
+      --line: #18181b;
+      --soft: #e4e4e7;
+      --accent: #1a1a1a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100vh; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.25s, color 0.25s;
+    }
+    .mono { font-family: 'Space Mono', ui-monospace, monospace; }
+    .nav {
+      max-width: 1320px; margin: 0 auto; padding: 32px 48px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+    .nav-r { display: flex; gap: 28px; font-size: 14px; }
+    .nav-r a { color: var(--muted); text-decoration: none; }
+    .hero { max-width: 1320px; margin: 0 auto; padding: 96px 48px 64px; }
+    .hero .crumb {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+      font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+    .hero .crumb::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--fg); display: inline-block; }
+    .hero h1 { font-size: 96px; line-height: 0.95; letter-spacing: -0.035em; font-weight: 700; margin: 0 0 16px; max-width: 14ch; }
+    .hero p { font-size: 18px; line-height: 1.55; color: var(--muted); max-width: 56ch; margin: 0; }
+    .toggle {
+      margin-top: 40px;
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+    .toggle button {
+      background: none; border: none; cursor: pointer; padding: 8px 18px;
+      font: inherit; font-size: 13px; border-radius: 999px;
+      color: var(--muted);
+    }
+    .toggle button.on { background: var(--line); color: var(--bg); font-weight: 500; }
+    .toggle .save { font-family: 'Space Mono', monospace; font-size: 10px; padding: 1px 6px; border-radius: 999px; background: var(--bg); color: var(--fg); margin-left: 6px; border: 1px solid var(--line); }
+    .toggle button.on .save { background: var(--bg); color: var(--fg); }
+    .grid {
+      max-width: 1320px; margin: 0 auto; padding: 0 48px 96px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+      border: 1px solid var(--line);
+      background: var(--bg);
+    }
+    .tier {
+      padding: 40px 36px 36px;
+      border-right: 1px solid var(--line);
+      display: flex; flex-direction: column; gap: 28px;
+      position: relative;
+      min-height: 620px;
+    }
+    .tier:last-child { border-right: none; }
+    .tier.featured {
+      background: var(--line);
+      color: var(--bg);
+    }
+    .tier.featured .muted-text, .tier.featured .price-period, .tier.featured .feat-row { color: rgba(255,255,255,0.65); }
+    .tier-head .name { font-size: 14px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; font-family: 'Space Mono', monospace; }
+    .tier-head .pitch { font-size: 16px; line-height: 1.5; color: var(--muted); margin: 12px 0 0; max-width: 26ch; }
+    .tier.featured .tier-head .pitch { color: rgba(255,255,255,0.7); }
+    .tier-badge {
+      position: absolute; top: 24px; right: 24px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 4px 10px;
+      border: 1px solid var(--bg);
+      border-radius: 999px;
+      color: var(--bg);
+    }
+    .price { display: flex; align-items: baseline; gap: 8px; }
+    .price .v { font-size: 64px; line-height: 1; letter-spacing: -0.03em; font-weight: 700; }
+    .price-period { font-size: 14px; color: var(--muted); }
+    .feat-list { display: flex; flex-direction: column; gap: 10px; padding: 0; margin: 0; list-style: none; flex: 1; }
+    .feat-row { display: flex; gap: 10px; font-size: 14px; line-height: 1.45; color: var(--fg); }
+    .feat-row::before {
+      content: '+'; font-family: 'Space Mono', monospace;
+      flex-shrink: 0; color: var(--fg); width: 14px;
+    }
+    .tier.featured .feat-row { color: var(--bg); }
+    .tier.featured .feat-row::before { color: var(--bg); }
+    .feat-row.disabled { color: #a1a1aa; text-decoration: line-through; }
+    .feat-row.disabled::before { content: '−'; color: #a1a1aa; }
+    .cta-tier {
+      width: 100%; padding: 16px;
+      font: inherit; font-size: 15px; font-weight: 500;
+      border-radius: 10px; cursor: pointer; border: 1px solid var(--line);
+      background: transparent; color: var(--fg);
+    }
+    .tier.featured .cta-tier { background: var(--bg); color: var(--fg); border-color: var(--bg); }
+    .tier:not(.featured) .cta-tier:hover { background: var(--line); color: var(--bg); }
+    /* Comparison row */
+    .compare {
+      max-width: 1320px; margin: 0 auto; padding: 56px 48px;
+      border-top: 1px solid var(--line);
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0;
+    }
+    .compare .col { padding: 16px 24px; border-right: 1px solid var(--soft); font-size: 13px; }
+    .compare .col:last-child { border-right: none; }
+    .compare .col.h { font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-size: 11px; }
+    .compare .col.label { font-weight: 500; }
+    .footer-band {
+      max-width: 1320px; margin: 0 auto; padding: 32px 48px;
+      border-top: 1px solid var(--line);
+      display: flex; justify-content: space-between; font-size: 13px; color: var(--muted);
+    }
+    .muted-text { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="brand">Foundry</div>
+    <div class="nav-r">
+      <a href="#">Product</a>
+      <a href="#">Customers</a>
+      <a href="#">Docs</a>
+      <a href="#">Pricing</a>
+      <a href="#">Sign in</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="crumb">Pricing · v3</div>
+    <h1>Pay for output. Not seats.</h1>
+    <p>Three tiers. Each priced for the volume of pipelines you'll actually run, not how many people log in. Fair monthly billing, no annual lock-in, cancel anytime.</p>
+    <div class="toggle">
+      <button>Monthly</button>
+      <button class="on">Annual <span class="save">−2 months</span></button>
+    </div>
+  </header>
+
+  <section class="grid">
+    <div class="tier">
+      <div class="tier-head">
+        <div class="name">Starter</div>
+        <p class="pitch">For solo operators wiring up their first pipeline.</p>
+      </div>
+      <div class="price">
+        <span class="v">$0</span>
+        <span class="price-period">/forever</span>
+      </div>
+      <ul class="feat-list">
+        <li class="feat-row">3 active pipelines</li>
+        <li class="feat-row">5,000 events / month</li>
+        <li class="feat-row">7-day event retention</li>
+        <li class="feat-row">Community support</li>
+        <li class="feat-row disabled">Webhooks</li>
+        <li class="feat-row disabled">SSO</li>
+        <li class="feat-row disabled">SLAs</li>
+      </ul>
+      <button class="cta-tier">Start free</button>
+    </div>
+    <div class="tier featured">
+      <div class="tier-badge">most picked</div>
+      <div class="tier-head">
+        <div class="name">Studio</div>
+        <p class="pitch">For teams shipping ops pipelines as a daily habit.</p>
+      </div>
+      <div class="price">
+        <span class="v">$24</span>
+        <span class="price-period">/mo, billed annually</span>
+      </div>
+      <ul class="feat-list">
+        <li class="feat-row">Unlimited pipelines</li>
+        <li class="feat-row">250,000 events / month</li>
+        <li class="feat-row">90-day retention + replay</li>
+        <li class="feat-row">Webhooks + outbound HTTP</li>
+        <li class="feat-row">Slack + Linear native</li>
+        <li class="feat-row">Email support, 1 business day</li>
+        <li class="feat-row disabled">SSO + audit log</li>
+      </ul>
+      <button class="cta-tier">Start 14-day trial</button>
+    </div>
+    <div class="tier">
+      <div class="tier-head">
+        <div class="name">Foundry</div>
+        <p class="pitch">For platform teams running ops at organization scale.</p>
+      </div>
+      <div class="price">
+        <span class="v">Talk</span>
+        <span class="price-period">to a human</span>
+      </div>
+      <ul class="feat-list">
+        <li class="feat-row">Unlimited everything</li>
+        <li class="feat-row">Multi-region + dedicated cluster</li>
+        <li class="feat-row">Custom retention</li>
+        <li class="feat-row">SSO + SCIM + audit log</li>
+        <li class="feat-row">SLA, 99.95% uptime</li>
+        <li class="feat-row">Designated support engineer</li>
+        <li class="feat-row">Annual + invoice billing</li>
+      </ul>
+      <button class="cta-tier">Book a 30-min call</button>
+    </div>
+  </section>
+
+  <section class="compare">
+    <div class="col h">Detail</div>
+    <div class="col h">Starter</div>
+    <div class="col h">Studio</div>
+    <div class="col h">Foundry</div>
+
+    <div class="col label">Pipelines</div>
+    <div class="col">3</div>
+    <div class="col">Unlimited</div>
+    <div class="col">Unlimited</div>
+
+    <div class="col label">Events / month</div>
+    <div class="col">5K</div>
+    <div class="col">250K</div>
+    <div class="col">Custom</div>
+
+    <div class="col label">Event retention</div>
+    <div class="col">7 days</div>
+    <div class="col">90 days + replay</div>
+    <div class="col">Custom</div>
+
+    <div class="col label">Region</div>
+    <div class="col">us-east</div>
+    <div class="col">us-east, eu-west</div>
+    <div class="col">Multi-region</div>
+
+    <div class="col label">SLA</div>
+    <div class="col">—</div>
+    <div class="col">99.5%</div>
+    <div class="col">99.95%</div>
+
+    <div class="col label">Support</div>
+    <div class="col">Community</div>
+    <div class="col">Email · 1 BD</div>
+    <div class="col">Designated engineer</div>
+  </section>
+
+  <div class="footer-band">
+    <span>© 2026 Foundry Labs</span>
+    <span>built with claude-design-mode</span>
+  </div>
+</body>
+</html>

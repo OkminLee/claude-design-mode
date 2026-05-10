@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Quartz — Series A pitch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; background: #000; }
+    deck-stage > div > section {
+      font-family: 'Fraunces', Georgia, serif;
+      font-feature-settings: 'ss01';
+    }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+    /* Slide 1: Title */
+    .s1 { background: #fef3c7; color: #18181b; display: flex; flex-direction: column; justify-content: space-between; padding: 96px 120px; }
+    .s1 .brand { font-size: 18px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }
+    .s1 h1 { font-size: 200px; line-height: 0.92; letter-spacing: -0.04em; font-weight: 600; margin: 0; }
+    .s1 h1 em { font-style: italic; }
+    .s1 .tag { font-size: 22px; color: #52525b; max-width: 600px; line-height: 1.4; }
+    .s1 .footer { display: flex; justify-content: space-between; align-items: end; }
+    .s1 .meta { font-size: 14px; color: #71717a; }
+    /* Slide 2: Problem */
+    .s2 { background: #18181b; color: #fafafa; display: flex; flex-direction: column; justify-content: center; padding: 0 160px; }
+    .s2 .label { font-size: 16px; color: #d97757; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 32px; }
+    .s2 h2 { font-size: 120px; line-height: 0.95; letter-spacing: -0.03em; font-weight: 600; margin: 0 0 48px; max-width: 18ch; }
+    .s2 h2 em { font-style: italic; color: #fef3c7; }
+    .s2 .stat { display: flex; gap: 96px; margin-top: 80px; }
+    .s2 .stat .num { font-size: 80px; line-height: 1; font-weight: 600; letter-spacing: -0.02em; color: #fef3c7; }
+    .s2 .stat .lab { font-size: 16px; color: #a1a1aa; max-width: 240px; line-height: 1.4; margin-top: 8px; }
+    /* Slide 3: Solution */
+    .s3 { background: #fafafa; color: #18181b; display: grid; grid-template-columns: 1fr 1fr; gap: 96px; padding: 96px 120px; align-items: center; }
+    .s3 .label { font-size: 16px; color: #18181b; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 24px; }
+    .s3 h2 { font-size: 88px; line-height: 0.96; letter-spacing: -0.03em; font-weight: 600; margin: 0 0 32px; }
+    .s3 h2 em { font-style: italic; }
+    .s3 .body { font-size: 22px; line-height: 1.5; color: #3f3f46; margin: 0; max-width: 36ch; }
+    .s3 .product { background: #18181b; border-radius: 24px; padding: 48px; height: 600px; display: flex; flex-direction: column; gap: 16px; color: #fafafa; }
+    .s3 .product-head { display: flex; gap: 6px; }
+    .s3 .product-head span { width: 12px; height: 12px; border-radius: 50%; background: #3f3f46; }
+    .s3 .product-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #27272a; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+    .s3 .product-row:last-child { border-bottom: none; }
+    .s3 .product-row .v { color: #d97757; }
+    /* Slide 4: Traction */
+    .s4 { background: #d97757; color: #18181b; display: flex; flex-direction: column; justify-content: center; padding: 0 160px; }
+    .s4 .label { font-size: 16px; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 32px; }
+    .s4 h2 { font-size: 100px; line-height: 0.95; letter-spacing: -0.03em; font-weight: 600; margin: 0 0 80px; max-width: 16ch; }
+    .s4 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 64px; }
+    .s4 .cell .num { font-size: 96px; line-height: 1; font-weight: 700; letter-spacing: -0.02em; }
+    .s4 .cell .lab { font-size: 16px; line-height: 1.4; margin-top: 12px; }
+    /* Slide 5: Ask */
+    .s5 { background: #18181b; color: #fafafa; display: flex; flex-direction: column; justify-content: space-between; padding: 96px 120px; }
+    .s5 .label { font-size: 16px; color: #d97757; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 32px; }
+    .s5 h2 { font-size: 144px; line-height: 0.95; letter-spacing: -0.03em; font-weight: 600; margin: 0; }
+    .s5 h2 em { font-style: italic; color: #fef3c7; }
+    .s5 .row { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 64px; padding-top: 48px; border-top: 1px solid #3f3f46; align-items: end; }
+    .s5 .label-sm { font-size: 14px; color: #a1a1aa; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 12px; }
+    .s5 .v-lg { font-size: 56px; font-weight: 600; letter-spacing: -0.02em; }
+    .s5 .v-md { font-size: 32px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.2; }
+  </style>
+</head>
+<body>
+  <script type="application/json" id="speaker-notes">
+    [
+      "Open with the brand. We are Quartz. The era of dashboards is ending.",
+      "The problem is operational legibility. Companies have data but can't read it. Quote the survey numbers — these are real, anonymized, n=412.",
+      "Our wedge is a written summary. Not another dashboard. A daily one-page brief written for the operator, not the analyst.",
+      "Traction in 9 months. ARR, customers, retention. Speak slowly here.",
+      "Raising 4M to grow GTM. We have 14 months runway. We are looking for a partner who has built B2B distribution at this stage."
+    ]
+  </script>
+  <deck-stage>
+    <section class="s1" data-screen-label="01 Title">
+      <div class="brand">Quartz</div>
+      <div>
+        <h1>Read your<br>company<br><em>in a minute.</em></h1>
+        <p class="tag">A daily written brief that turns your data warehouse into one page of plain English. Replaces 12 dashboards.</p>
+      </div>
+      <div class="footer">
+        <div class="meta">Series A · Q2 2026</div>
+        <div class="meta mono">v1 · 14 / MAY / 2026</div>
+      </div>
+    </section>
+    <section class="s2" data-screen-label="02 Problem">
+      <div>
+        <div class="label mono">The problem</div>
+        <h2>Companies have data.<br>They <em>can't read it.</em></h2>
+        <div class="stat">
+          <div>
+            <div class="num">73%</div>
+            <div class="lab">of operating execs say their dashboards "answer the wrong question."</div>
+          </div>
+          <div>
+            <div class="num">2.4h</div>
+            <div class="lab">spent each week reconciling reports across teams. Per exec.</div>
+          </div>
+          <div>
+            <div class="num">12</div>
+            <div class="lab">median number of dashboards a Series B operator opens daily.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="s3" data-screen-label="03 Solution">
+      <div>
+        <div class="label mono">What we built</div>
+        <h2>One page.<br><em>Every morning.</em></h2>
+        <p class="body">Quartz reads your warehouse, your CRM, your support queue. It writes a one-page brief — what changed, why it matters, and what to do today. Drops in your inbox at 7am.</p>
+      </div>
+      <div class="product">
+        <div class="product-head"><span></span><span></span><span></span></div>
+        <div style="font-size: 14px; color: #71717a; margin-top: 8px;">Tuesday · May 14 · Brief</div>
+        <div style="font-size: 22px; line-height: 1.4; margin: 8px 0 16px;">Net new ARR pulled forward $312K vs. plan. Two enterprise deals slipped. Support load down 18%.</div>
+        <div class="product-row"><span>NEW ARR (D)</span><span class="v">+ $312K</span></div>
+        <div class="product-row"><span>NEW LOGOS (W)</span><span class="v">14</span></div>
+        <div class="product-row"><span>SLIPPED DEALS</span><span class="v">2 · $480K</span></div>
+        <div class="product-row"><span>SUPPORT TICKETS</span><span class="v">- 18%</span></div>
+        <div class="product-row"><span>NPS (W)</span><span class="v">+ 4 → 67</span></div>
+      </div>
+    </section>
+    <section class="s4" data-screen-label="04 Traction">
+      <div>
+        <div class="label mono">Traction</div>
+        <h2>9 months in.<br>One brief at a time.</h2>
+        <div class="grid">
+          <div class="cell">
+            <div class="num">$1.4M</div>
+            <div class="lab">ARR. 47% net revenue retention from cohort 1.</div>
+          </div>
+          <div class="cell">
+            <div class="num">42</div>
+            <div class="lab">paying customers. ACV $33K. 9 logos over $50K.</div>
+          </div>
+          <div class="cell">
+            <div class="num">94%</div>
+            <div class="lab">of subscribers open the daily brief. Median first-touch 8m.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="s5" data-screen-label="05 Ask">
+      <div>
+        <div class="label mono">The ask</div>
+        <h2>Raising <em>$4M.</em></h2>
+      </div>
+      <div class="row">
+        <div>
+          <div class="label-sm mono">Use of funds</div>
+          <div class="v-md">2 sales hires · 1 forward-deployed eng · move warehouse infra to multi-region.</div>
+        </div>
+        <div>
+          <div class="label-sm mono">Runway</div>
+          <div class="v-lg">14 mo</div>
+        </div>
+        <div>
+          <div class="label-sm mono">Lead</div>
+          <div class="v-md">Looking for a partner who has done B2B distribution at $1–10M ARR.</div>
+        </div>
+      </div>
+    </section>
+  </deck-stage>
+  <script src="deck_stage.js"></script>
+</body>
+</html>

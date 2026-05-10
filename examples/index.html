@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>claude-design-mode · examples</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100vh; }
+    body {
+      background: #0b0b0e;
+      color: #fafafa;
+      font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.005em;
+    }
+    .mono { font-family: 'Geist Mono', ui-monospace, monospace; }
+    .nav {
+      max-width: 1280px; margin: 0 auto;
+      padding: 32px 48px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 14px;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 600; letter-spacing: -0.01em;
+    }
+    .brand-mark {
+      width: 22px; height: 22px;
+      background: linear-gradient(180deg, #d97757 0%, #b9532f 100%);
+      border-radius: 6px;
+    }
+    .nav-r { display: flex; gap: 24px; color: #71717a; }
+    .nav-r a { color: inherit; text-decoration: none; }
+    .nav-r a:hover { color: #fafafa; }
+    .hero {
+      max-width: 1280px; margin: 0 auto;
+      padding: 80px 48px 64px;
+    }
+    .crumb {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px;
+      border: 1px solid #27272a;
+      border-radius: 999px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
+      color: #a1a1aa;
+      margin-bottom: 24px;
+    }
+    .crumb .dot { width: 6px; height: 6px; border-radius: 50%; background: #d97757; }
+    h1 {
+      font-size: clamp(48px, 6vw, 88px);
+      line-height: 0.96;
+      letter-spacing: -0.035em;
+      font-weight: 600;
+      margin: 0 0 24px;
+      max-width: 18ch;
+    }
+    h1 em { font-style: normal; color: #d97757; }
+    .lede {
+      font-size: 19px; line-height: 1.55; color: #a1a1aa;
+      max-width: 60ch; margin: 0 0 16px;
+    }
+    .meta {
+      margin-top: 24px;
+      display: flex; flex-wrap: wrap; gap: 28px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; color: #71717a; letter-spacing: 0.04em;
+    }
+    .meta a { color: #d97757; text-decoration: none; }
+    .meta a:hover { text-decoration: underline; }
+    /* Grid of examples */
+    .grid {
+      max-width: 1280px; margin: 0 auto;
+      padding: 0 48px 96px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px;
+    }
+    .card {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 16px;
+      padding: 24px;
+      display: flex; flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: #3f3f46;
+      background: #1f1f23;
+    }
+    .card .label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 10px;
+    }
+    .card .name { font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
+    .card .num { font-family: 'Geist Mono', monospace; font-size: 11px; color: #71717a; letter-spacing: 0.05em; }
+    .card .pitch { font-size: 13px; color: #a1a1aa; line-height: 1.5; margin: 0 0 16px; }
+    .card .thumb {
+      aspect-ratio: 16 / 10;
+      background: #0b0b0e;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #27272a;
+    }
+    .card .thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
+    .card .tags {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-top: 16px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      color: #71717a;
+    }
+    .card .tags span {
+      padding: 3px 8px;
+      background: #0b0b0e;
+      border: 1px solid #27272a;
+      border-radius: 999px;
+    }
+    /* Footer band */
+    .band {
+      max-width: 1280px; margin: 0 auto;
+      padding: 48px;
+      border-top: 1px solid #27272a;
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 48px;
+    }
+    .band h3 {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+      color: #71717a;
+      margin: 0 0 12px;
+      font-weight: 500;
+    }
+    .band p { font-size: 14px; line-height: 1.55; color: #d4d4d8; margin: 0; }
+    .band a { color: #d97757; text-decoration: none; }
+    .band a:hover { text-decoration: underline; }
+    .footer {
+      max-width: 1280px; margin: 0 auto;
+      padding: 32px 48px 64px;
+      display: flex; justify-content: space-between;
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; color: #71717a;
+      border-top: 1px solid #27272a;
+    }
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr; }
+      .band { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="brand"><div class="brand-mark"></div>claude-design-mode</div>
+    <div class="nav-r">
+      <a href="https://github.com/OkminLee/claude-design-mode">GitHub</a>
+      <a href="https://github.com/OkminLee/claude-design-mode#install">Install</a>
+      <a href="https://github.com/OkminLee/claude-design-mode/blob/main/skills/design-mode/SKILL.md">Skill</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="crumb"><span class="dot"></span><span>Live examples</span></div>
+    <h1>Five designs the plugin <em>actually</em> shipped.</h1>
+    <p class="lede">Every page below is a single self-contained HTML file generated through the design-mode workflow: starter copy → preview → AI-slop verifier → ship. Click a card to open the live page in a new tab.</p>
+    <p class="lede">Source files and the original prompts live in <a href="https://github.com/OkminLee/claude-design-mode/tree/main/examples" style="color: #d97757; text-decoration: none;">/examples</a> in the repo.</p>
+    <div class="meta">
+      <span>5 designs</span>
+      <span>· 5 distinct aesthetic directions</span>
+      <span>· all verified <code style="color: #fafafa;">errors: 0</code></span>
+    </div>
+  </header>
+
+  <section class="grid">
+    <a class="card" href="tempo-launch.html">
+      <div class="label">
+        <span class="name">Tempo</span>
+        <span class="num">01 · landing</span>
+      </div>
+      <p class="pitch">Time-tracker app launch landing. Dark theme, Geist, iPhone mockup with a live timer counting down to the plugin's own v1.0 release. Six tweakable values via in-page panel.</p>
+      <div class="thumb"><img src="tempo-launch.png" alt="Tempo launch landing"></div>
+      <div class="tags">
+        <span>landing</span>
+        <span>dark</span>
+        <span>iphone-frame</span>
+        <span>tweaks-panel</span>
+      </div>
+    </a>
+
+    <a class="card" href="quartz-deck.html">
+      <div class="label">
+        <span class="name">Quartz</span>
+        <span class="num">02 · pitch deck</span>
+      </div>
+      <p class="pitch">Five-slide Series A pitch — Title, Problem, Solution, Traction, Ask. Fraunces serif italic, two background colors max. deck_stage.js handles scaling, keyboard nav, speaker notes, print-to-PDF.</p>
+      <div class="thumb"><img src="quartz-deck.png" alt="Quartz pitch deck"></div>
+      <div class="tags">
+        <span>deck</span>
+        <span>5-slides</span>
+        <span>deck_stage</span>
+        <span>fraunces</span>
+      </div>
+    </a>
+
+    <a class="card" href="aurora-wireframes.html">
+      <div class="label">
+        <span class="name">Aurora</span>
+        <span class="num">03 · wireframes</span>
+      </div>
+      <p class="pitch">Onboarding flow exploration for an offline-first journaling app. Four variations side-by-side — greyscale-only, dashed-border placeholders. Speed over polish, before any high-fi commit.</p>
+      <div class="thumb"><img src="aurora-wireframes.png" alt="Aurora onboarding wireframes"></div>
+      <div class="tags">
+        <span>wireframe</span>
+        <span>4-variations</span>
+        <span>greyscale</span>
+        <span>design_canvas</span>
+      </div>
+    </a>
+
+    <a class="card" href="crayon-notes.html">
+      <div class="label">
+        <span class="name">Crayon</span>
+        <span class="num">04 · macOS app marketing</span>
+      </div>
+      <p class="pitch">Native Mac notes app marketing site. Warm beige palette with one accent color, Inter Tight for body, Caveat handwritten for emotional accents. Pixel-precise macOS window with traffic lights + sidebar + content.</p>
+      <div class="thumb"><img src="crayon-notes.png" alt="Crayon notes app marketing"></div>
+      <div class="tags">
+        <span>marketing</span>
+        <span>macos-window</span>
+        <span>warm</span>
+        <span>handwritten-accent</span>
+      </div>
+    </a>
+
+    <a class="card" href="foundry-pricing.html">
+      <div class="label">
+        <span class="name">Foundry</span>
+        <span class="num">05 · pricing</span>
+      </div>
+      <p class="pitch">Three-tier SaaS pricing. Bold Space Grotesk + Space Mono pairing. Monochrome with one featured tier in inverted black. Feature comparison table below. No gradients, no checkmark icons — typography only.</p>
+      <div class="thumb"><img src="foundry-pricing.png" alt="Foundry pricing"></div>
+      <div class="tags">
+        <span>pricing</span>
+        <span>3-tier</span>
+        <span>monochrome</span>
+        <span>space-grotesk</span>
+      </div>
+    </a>
+
+    <a class="card" href="https://github.com/OkminLee/claude-design-mode#install" style="background: transparent; border-style: dashed;">
+      <div class="label">
+        <span class="name" style="color: #d97757;">Make your own</span>
+        <span class="num">+</span>
+      </div>
+      <p class="pitch">Install the plugin and run <code style="font-family: 'Geist Mono', monospace; color: #fafafa;">/design-mode</code> with any brief. Each design above started with one or two sentences in plain language. Yours can too.</p>
+      <div class="thumb" style="display: flex; align-items: center; justify-content: center; background: #0b0b0e;">
+        <span style="font-family: 'Geist Mono', monospace; color: #71717a; font-size: 14px;">$ /plugin install github.com/OkminLee/claude-design-mode</span>
+      </div>
+      <div class="tags">
+        <span>plugin</span>
+        <span>install</span>
+        <span>open</span>
+      </div>
+    </a>
+  </section>
+
+  <section class="band">
+    <div>
+      <h3>What you're seeing</h3>
+      <p>Each example is a single HTML file with no build step, no bundler, no framework runtime. Just CSS, vanilla JS where needed, and Google Fonts.</p>
+    </div>
+    <div>
+      <h3>How they were made</h3>
+      <p>One natural-language prompt per design → claude-design-mode workflow → headless preview → vision-only AI-slop audit → ship. No hand-tuning of the screenshots.</p>
+    </div>
+    <div>
+      <h3>Try the live edits</h3>
+      <p>Open <a href="tempo-launch.html">Tempo</a> and tweak values in the bottom-right panel. Live updates apply immediately. With <code style="font-family: 'Geist Mono', monospace; font-size: 12px;">tweak-host.js</code> running, edits also persist to disk.</p>
+    </div>
+  </section>
+
+  <div class="footer">
+    <span>built with claude-design-mode · v1.0.0</span>
+    <span><a href="https://github.com/OkminLee/claude-design-mode" style="color: #d97757; text-decoration: none;">github.com/OkminLee/claude-design-mode</a></span>
+  </div>
+</body>
+</html>
