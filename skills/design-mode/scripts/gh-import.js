@@ -84,6 +84,54 @@ function bumpFilename(destDir, filename, existsFn) {
   throw new Error('bumpFilename: too many collisions for ' + filename);
 }
 
+function parseArgs(argv) {
+  const args = argv.slice(2);
+  if (args.length === 0) {
+    fail('usage: gh-import.js <url> [--dest <dir>] [--name <filename>] [--max-bytes <N>] [--allow-binary]');
+  }
+  let url = null;
+  let dest = 'references';
+  let name = null;
+  let maxBytes = 5 * 1024 * 1024;
+  let allowBinary = false;
+
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a === '--dest') {
+      dest = args[++i] || '';
+      if (!dest) fail('--dest requires a value');
+    } else if (a.startsWith('--dest=')) {
+      dest = a.slice('--dest='.length);
+    } else if (a === '--name') {
+      name = args[++i] || '';
+      if (!name) fail('--name requires a value');
+    } else if (a.startsWith('--name=')) {
+      name = a.slice('--name='.length);
+    } else if (a === '--max-bytes') {
+      const v = args[++i] || '';
+      maxBytes = parseInt(v, 10);
+      if (!Number.isFinite(maxBytes) || maxBytes <= 0) fail('--max-bytes must be a positive integer');
+    } else if (a.startsWith('--max-bytes=')) {
+      maxBytes = parseInt(a.slice('--max-bytes='.length), 10);
+      if (!Number.isFinite(maxBytes) || maxBytes <= 0) fail('--max-bytes must be a positive integer');
+    } else if (a === '--allow-binary') {
+      allowBinary = true;
+    } else if (a.startsWith('--')) {
+      fail('unknown flag: ' + a);
+    } else if (!url) {
+      url = a;
+    } else {
+      fail('unexpected argument: ' + a);
+    }
+  }
+
+  if (!url) fail('missing <url>');
+  if (name && (name.includes('/') || name.includes('\\') || name.includes('..') || name.includes('\0'))) {
+    throw new Error('invalid_name: filename may not contain /, \\, .., or NUL');
+  }
+  return { url, dest, name, maxBytes, allowBinary };
+}
+
 async function main() {
   fail('not yet implemented');
 }
@@ -91,5 +139,5 @@ async function main() {
 if (require.main === module) {
   main().catch(err => fail('unhandled: ' + (err && err.stack || err)));
 } else {
-  module.exports = { normalizeUrl, validateContentType, bumpFilename };
+  module.exports = { normalizeUrl, validateContentType, bumpFilename, parseArgs };
 }

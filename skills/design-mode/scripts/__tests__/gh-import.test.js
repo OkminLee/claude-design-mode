@@ -114,3 +114,48 @@ test('bumpFilename: handles dotless filenames', () => {
   const exists = (p) => p === '/tmp/refs/README';
   assert.strictEqual(bumpFilename('/tmp/refs', 'README', exists), '/tmp/refs/README.2');
 });
+
+const { parseArgs } = require('../gh-import');
+
+test('parseArgs: minimal — url only', () => {
+  const r = parseArgs(['node', 'gh-import.js', 'https://github.com/foo/bar/blob/main/file.css']);
+  assert.strictEqual(r.url, 'https://github.com/foo/bar/blob/main/file.css');
+  assert.strictEqual(r.dest, 'references');
+  assert.strictEqual(r.name, null);
+  assert.strictEqual(r.maxBytes, 5 * 1024 * 1024);
+  assert.strictEqual(r.allowBinary, false);
+});
+
+test('parseArgs: --dest overrides default', () => {
+  const r = parseArgs(['node', 'gh-import.js', 'https://github.com/foo/bar/blob/main/x', '--dest', 'lib/']);
+  assert.strictEqual(r.dest, 'lib/');
+});
+
+test('parseArgs: --name overrides filename', () => {
+  const r = parseArgs(['node', 'gh-import.js', 'https://github.com/foo/bar/blob/main/x', '--name', 'tokens.css']);
+  assert.strictEqual(r.name, 'tokens.css');
+});
+
+test('parseArgs: --max-bytes parses int', () => {
+  const r = parseArgs(['node', 'gh-import.js', 'https://github.com/foo/bar/blob/main/x', '--max-bytes', '1024']);
+  assert.strictEqual(r.maxBytes, 1024);
+});
+
+test('parseArgs: --allow-binary toggles flag', () => {
+  const r = parseArgs(['node', 'gh-import.js', 'https://github.com/foo/bar/blob/main/x', '--allow-binary']);
+  assert.strictEqual(r.allowBinary, true);
+});
+
+test('parseArgs: --name with .. throws invalid_name', () => {
+  assert.throws(
+    () => parseArgs(['node', 'gh-import.js', 'https://github.com/foo/bar/blob/main/x', '--name', '../etc/passwd']),
+    /invalid_name/
+  );
+});
+
+test('parseArgs: --name with slash throws invalid_name', () => {
+  assert.throws(
+    () => parseArgs(['node', 'gh-import.js', 'https://github.com/foo/bar/blob/main/x', '--name', 'a/b.css']),
+    /invalid_name/
+  );
+});
