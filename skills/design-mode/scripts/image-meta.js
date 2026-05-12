@@ -36,7 +36,7 @@ function parsePngHeader(buf) {
   return { width, height };
 }
 
-// SOFn markers that carry width/height (excludes C4=DHT, C8=reserved, CC=DAC).
+// width/height을 포함하는 SOFn 마커 (C4=DHT, C8=reserved, CC=DAC 제외).
 const SOF_MARKERS = new Set([
   0xC0, 0xC1, 0xC2, 0xC3,
   0xC5, 0xC6, 0xC7,
@@ -44,12 +44,12 @@ const SOF_MARKERS = new Set([
   0xCD, 0xCE, 0xCF,
 ]);
 
-// Standalone markers without length field.
+// 길이 필드가 없는 단독 마커.
 const STANDALONE_MARKERS = new Set([
-  0x00,                          // FF 00 = byte stuff (not a real marker)
+  0x00,                          // FF 00 = byte 스터핑 (실제 마커 아님)
   0x01,                          // TEM
   0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7, // RSTn
-  0xD8,                          // SOI (only valid at start)
+  0xD8,                          // SOI (시작에서만 유효)
   0xD9,                          // EOI
 ]);
 
@@ -62,15 +62,14 @@ function parseJpegDimensions(buf) {
   }
   let i = 2;
   while (i < buf.length - 1) {
-    // Find next 0xFF.
     if (buf[i] !== 0xFF) { i++; continue; }
-    // Skip padding 0xFF bytes (some encoders emit FF FF FF Cx).
+    // 패딩 0xFF 바이트 스킵 (일부 인코더가 FF FF FF Cx 형태로 출력).
     while (i < buf.length - 1 && buf[i] === 0xFF && buf[i + 1] === 0xFF) i++;
     if (i >= buf.length - 1) break;
     const marker = buf[i + 1];
 
     if (SOF_MARKERS.has(marker)) {
-      // SOFn segment: FF marker LL LL P HH HH WW WW ...
+      // SOFn 세그먼트 구조: FF marker LL LL P HH HH WW WW ...
       if (i + 9 > buf.length) {
         throw new Error('corrupt_header: SOF segment truncated');
       }
@@ -87,7 +86,6 @@ function parseJpegDimensions(buf) {
       continue;
     }
 
-    // Standard segment with 2-byte length following the marker byte.
     if (i + 4 > buf.length) {
       throw new Error('corrupt_header: segment header truncated');
     }
