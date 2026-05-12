@@ -24,6 +24,18 @@ function detectFormat(buf) {
   return null;
 }
 
+function parsePngHeader(buf) {
+  if (!buf || buf.length < 24) {
+    throw new Error('corrupt_header: PNG buffer too short (need 24+ bytes, got ' + (buf ? buf.length : 0) + ')');
+  }
+  const width = buf.readUInt32BE(16);
+  const height = buf.readUInt32BE(20);
+  if (width === 0 || height === 0) {
+    throw new Error('corrupt_header: PNG IHDR reports zero width or height');
+  }
+  return { width, height };
+}
+
 async function main() {
   fail('not yet implemented');
 }
@@ -31,5 +43,5 @@ async function main() {
 if (require.main === module) {
   main().catch(err => fail('unhandled: ' + (err && err.stack || err)));
 } else {
-  module.exports = { detectFormat };
+  module.exports = { detectFormat, parsePngHeader };
 }
