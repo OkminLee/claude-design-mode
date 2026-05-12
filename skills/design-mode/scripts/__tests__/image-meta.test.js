@@ -376,3 +376,39 @@ test('main(): GIF file returns unsupported_format JSON exit 2', async () => {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('main(): URL argument writes to stderr and exits 1', async () => {
+  const origCwd = process.cwd();
+  const origStderr = process.stderr.write.bind(process.stderr);
+  const origExit = process.exit;
+  const origArgv = process.argv;
+  let captured = '';
+  let exitCode = null;
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'imgmeta-'));
+  try {
+    process.chdir(tmp);
+    process.stderr.write = (s) => { captured += s; return true; };
+    process.exit = (c) => { exitCode = c; throw new Error('__exit__'); };
+    process.argv = ['node', 'image-meta.js', 'https://example.com/foo.png'];
+
+    delete require.cache[require.resolve('../image-meta')];
+    const mod = require('../image-meta');
+
+    try {
+      await mod.main();
+    } catch (e) {
+      if (e.message !== '__exit__') throw e;
+    } finally {
+      process.argv = origArgv;
+      process.chdir(origCwd);
+      process.stderr.write = origStderr;
+      process.exit = origExit;
+    }
+
+    assert.match(captured, /not a URL/);
+    assert.match(captured, /gh-import\.js/);
+    assert.strictEqual(exitCode, 1);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
