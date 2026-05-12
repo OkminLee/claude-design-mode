@@ -2,6 +2,9 @@
 
 const test = require('node:test');
 const assert = require('node:assert');
+const os = require('os');
+const fs = require('fs');
+const path = require('path');
 
 test('test runner works', () => {
   assert.strictEqual(1 + 1, 2);
@@ -253,5 +256,123 @@ test('parseArgs: missing file argument', () => {
   } finally {
     process.exit = origExit;
     process.stderr.write = origStderr;
+  }
+});
+
+test('main(): happy path with synthetic PNG', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'imgmeta-'));
+  try {
+    const filePath = path.join(dir, 'tiny.png');
+    fs.writeFileSync(filePath, makePng(64, 32));
+
+    const origCwd = process.cwd();
+    const origWrite = process.stdout.write.bind(process.stdout);
+    const origExit = process.exit;
+    const origArgv = process.argv;
+    let captured = '';
+    let exitCode = null;
+    process.chdir(dir);
+    process.stdout.write = (s) => { captured += s; return true; };
+    process.exit = (c) => { exitCode = c; throw new Error('__exit__'); };
+    process.argv = ['node', 'image-meta.js', filePath];
+
+    delete require.cache[require.resolve('../image-meta')];
+    const mod = require('../image-meta');
+
+    try {
+      await mod.main();
+    } catch (e) {
+      if (e.message !== '__exit__') throw e;
+    } finally {
+      process.argv = origArgv;
+      process.chdir(origCwd);
+      process.stdout.write = origWrite;
+      process.exit = origExit;
+    }
+
+    const json = JSON.parse(captured.trim());
+    assert.strictEqual(json.format, 'png');
+    assert.strictEqual(json.width, 64);
+    assert.strictEqual(json.height, 32);
+    assert.strictEqual(json.bytes, 24);
+    assert.strictEqual(path.basename(json.path), 'tiny.png');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('main(): missing file returns not_found JSON exit 2', async () => {
+  const origCwd = process.cwd();
+  const origWrite = process.stdout.write.bind(process.stdout);
+  const origExit = process.exit;
+  const origArgv = process.argv;
+  let captured = '';
+  let exitCode = null;
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'imgmeta-'));
+  try {
+    process.chdir(tmp);
+    process.stdout.write = (s) => { captured += s; return true; };
+    process.exit = (c) => { exitCode = c; throw new Error('__exit__'); };
+    process.argv = ['node', 'image-meta.js', '/nonexistent/path/foo.png'];
+
+    delete require.cache[require.resolve('../image-meta')];
+    const mod = require('../image-meta');
+
+    try {
+      await mod.main();
+    } catch (e) {
+      if (e.message !== '__exit__') throw e;
+    } finally {
+      process.argv = origArgv;
+      process.chdir(origCwd);
+      process.stdout.write = origWrite;
+      process.exit = origExit;
+    }
+
+    const json = JSON.parse(captured.trim());
+    assert.strictEqual(json.error, 'not_found');
+    assert.strictEqual(exitCode, 2);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('main(): GIF file returns unsupported_format JSON exit 2', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'imgmeta-'));
+  try {
+    const filePath = path.join(dir, 'fake.gif');
+    fs.writeFileSync(filePath, Buffer.from([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x00, 0x00]));
+
+    const origCwd = process.cwd();
+    const origWrite = process.stdout.write.bind(process.stdout);
+    const origExit = process.exit;
+    const origArgv = process.argv;
+    let captured = '';
+    let exitCode = null;
+    process.chdir(dir);
+    process.stdout.write = (s) => { captured += s; return true; };
+    process.exit = (c) => { exitCode = c; throw new Error('__exit__'); };
+    process.argv = ['node', 'image-meta.js', filePath];
+
+    delete require.cache[require.resolve('../image-meta')];
+    const mod = require('../image-meta');
+
+    try {
+      await mod.main();
+    } catch (e) {
+      if (e.message !== '__exit__') throw e;
+    } finally {
+      process.argv = origArgv;
+      process.chdir(origCwd);
+      process.stdout.write = origWrite;
+      process.exit = origExit;
+    }
+
+    const json = JSON.parse(captured.trim());
+    assert.strictEqual(json.error, 'unsupported_format');
+    assert.match(json.message, /47 49 46 38/);
+    assert.strictEqual(exitCode, 2);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
   }
 });

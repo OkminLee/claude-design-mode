@@ -121,12 +121,64 @@ function parseArgs(argv) {
   return { file };
 }
 
+const READ_CAP = 1024 * 1024;
+
 async function main() {
-  fail('not yet implemented');
+  const args = parseArgs(process.argv);
+  const absPath = path.resolve(process.cwd(), args.file);
+
+  let stat;
+  try {
+    stat = fs.statSync(absPath);
+  } catch (e) {
+    if (e && e.code === 'ENOENT') {
+      failJson('not_found', 'not_found: ' + absPath, 2);
+      return;
+    }
+    failJson('io', 'io: ' + String(e.message || e), 2);
+    return;
+  }
+  if (!stat.isFile()) {
+    failJson('not_a_file', 'not_a_file: ' + absPath, 2);
+    return;
+  }
+
+  const readLen = Math.min(stat.size, READ_CAP);
+  const buf = Buffer.alloc(readLen);
+  const fd = fs.openSync(absPath, 'r');
+  try {
+    fs.readSync(fd, buf, 0, readLen, 0);
+  } finally {
+    fs.closeSync(fd);
+  }
+
+  const format = detectFormat(buf);
+  if (!format) {
+    const head = Array.from(buf.subarray(0, 4)).map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
+    failJson('unsupported_format', 'unsupported_format: expected PNG (89 50 4E 47) or JPG (FF D8), got ' + head, 2);
+    return;
+  }
+
+  let dims;
+  try {
+    dims = format === 'png' ? parsePngHeader(buf) : parseJpegDimensions(buf);
+  } catch (e) {
+    failJson('corrupt_header', String(e.message || e), 2);
+    return;
+  }
+
+  const out = {
+    path: absPath,
+    format,
+    width: dims.width,
+    height: dims.height,
+    bytes: stat.size,
+  };
+  process.stdout.write(JSON.stringify(out) + '\n');
 }
 
 if (require.main === module) {
   main().catch(err => fail('unhandled: ' + (err && err.stack || err)));
 } else {
-  module.exports = { detectFormat, parsePngHeader, parseJpegDimensions, parseArgs };
+  module.exports = { detectFormat, parsePngHeader, parseJpegDimensions, parseArgs, main };
 }
