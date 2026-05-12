@@ -175,3 +175,83 @@ test('parseJpegDimensions: buffer with only SOI throws corrupt_header', () => {
     /corrupt_header/
   );
 });
+
+const { parseArgs } = require('../image-meta');
+
+test('parseArgs: minimal file path', () => {
+  const r = parseArgs(['node', 'image-meta.js', 'logo.png']);
+  assert.strictEqual(r.file, 'logo.png');
+});
+
+test('parseArgs: absolute file path', () => {
+  const r = parseArgs(['node', 'image-meta.js', '/tmp/foo.jpg']);
+  assert.strictEqual(r.file, '/tmp/foo.jpg');
+});
+
+test('parseArgs: rejects http URL', () => {
+  const origExit = process.exit;
+  const origStderr = process.stderr.write.bind(process.stderr);
+  let exitCode = null;
+  process.exit = (c) => { exitCode = c; throw new Error('__exit__'); };
+  process.stderr.write = () => true;
+  try {
+    assert.throws(
+      () => parseArgs(['node', 'image-meta.js', 'http://example.com/x.png']),
+      /__exit__/
+    );
+    assert.strictEqual(exitCode, 1);
+  } finally {
+    process.exit = origExit;
+    process.stderr.write = origStderr;
+  }
+});
+
+test('parseArgs: rejects https URL', () => {
+  const origExit = process.exit;
+  const origStderr = process.stderr.write.bind(process.stderr);
+  let exitCode = null;
+  process.exit = (c) => { exitCode = c; throw new Error('__exit__'); };
+  process.stderr.write = () => true;
+  try {
+    assert.throws(
+      () => parseArgs(['node', 'image-meta.js', 'https://example.com/x.jpg']),
+      /__exit__/
+    );
+    assert.strictEqual(exitCode, 1);
+  } finally {
+    process.exit = origExit;
+    process.stderr.write = origStderr;
+  }
+});
+
+test('parseArgs: rejects unknown flag', () => {
+  const origExit = process.exit;
+  const origStderr = process.stderr.write.bind(process.stderr);
+  process.exit = () => { throw new Error('__exit__'); };
+  process.stderr.write = () => true;
+  try {
+    assert.throws(
+      () => parseArgs(['node', 'image-meta.js', '--max-bytes', '100', 'foo.png']),
+      /__exit__/
+    );
+  } finally {
+    process.exit = origExit;
+    process.stderr.write = origStderr;
+  }
+});
+
+test('parseArgs: missing file argument', () => {
+  const origExit = process.exit;
+  const origStderr = process.stderr.write.bind(process.stderr);
+  process.exit = () => { throw new Error('__exit__'); };
+  process.stderr.write = () => true;
+  try {
+    assert.throws(
+      () => parseArgs(['node', 'image-meta.js']),
+      /__exit__/
+    );
+  } finally {
+    process.exit = origExit;
+    process.stderr.write = origStderr;
+  }
+});

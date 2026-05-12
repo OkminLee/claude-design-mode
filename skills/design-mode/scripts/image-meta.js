@@ -98,6 +98,29 @@ function parseJpegDimensions(buf) {
   throw new Error('corrupt_header: no SOF marker found in buffer');
 }
 
+function parseArgs(argv) {
+  const args = argv.slice(2);
+  if (args.length === 0) {
+    fail('usage: image-meta.js <file>');
+  }
+  let file = null;
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a.startsWith('--')) {
+      fail('unknown flag: ' + a + ' (image-meta.js takes no options)');
+    } else if (!file) {
+      file = a;
+    } else {
+      fail('unexpected argument: ' + a);
+    }
+  }
+  if (!file) fail('missing <file>');
+  if (/^https?:\/\//i.test(file)) {
+    fail('image-meta.js takes a local file path, not a URL. Use gh-import.js first to download it, then pass the local path.');
+  }
+  return { file };
+}
+
 async function main() {
   fail('not yet implemented');
 }
@@ -105,5 +128,5 @@ async function main() {
 if (require.main === module) {
   main().catch(err => fail('unhandled: ' + (err && err.stack || err)));
 } else {
-  module.exports = { detectFormat, parsePngHeader, parseJpegDimensions };
+  module.exports = { detectFormat, parsePngHeader, parseJpegDimensions, parseArgs };
 }
